@@ -1,0 +1,341 @@
+<!doctype html>                                   
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Skúškové zadanie</title>
+  
+  <link rel="stylesheet" href="static/jquery-ui.min.css">
+  <script src="static/jquery-3.2.1.min.js"></script>
+  <script src="static/jquery-ui.min.js"></script>
+  <script>
+    $(function() {
+      $("#tabs").tabs({
+        event: "mouseover"
+      });
+    });
+  </script>
+  <style>
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f2f2f2;
+    }
+
+    h1, h2 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #tabs {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    #tabs ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      border-bottom: 1px solid #ccc;
+    }
+
+    #tabs ul li {
+      display: inline-block;
+      margin-right: 10px;
+    }
+
+    #tabs ul li a {
+      display: block;
+      padding: 10px 20px;
+      background-color: #eee;
+      color: #333;
+      text-decoration: none;
+      border: 1px solid #ccc;
+      border-bottom: none;
+    }
+
+    #tabs ul li a:hover {
+      background-color: #f9f9f9;
+    }
+
+    #tabs .tab-content {
+      padding: 20px 0;
+    }
+
+    #plotdiv {
+      width: 600px;
+      height: 450px;
+      margin: 0 auto;
+    }
+
+    #canvasID1, #canvasID2 {
+      display: block;
+      width: 300px;
+      height: 300px;
+      margin: 20px auto;
+    }
+    #log {
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 200px;
+      overflow-y: scroll;
+    }
+  </style>
+  </head>
+  <body>
+    
+    <div id="tabs">
+      <ul>
+        <li><a href="#tabs-1">Numericky vypis hodnot</a></li>
+        <li><a href="#tabs-2">Grafy meranych velicin</a></li>
+        <li><a href="#tabs-3">Ciferniky</a></li>
+      </ul>
+      <div id="tabs-1">
+        <h1>POIT- Zavlahovy system s meranim vysky hladiny s arduinoUNO</h1>
+  <h2>Send:</h2>
+  <form id="emit" method="POST" action='#'>
+  
+  </form>
+  
+  <form id="disconnect" method="POST" action="#">
+    <input type="submit" value="Disconnect">
+  </form> 
+  <button id="closeApp">Close</button>
+  <h2>Receive:</h2>
+  <div id="log"></div>
+      </div>
+      <div id="tabs-2">
+        <div id="plotdiv" style="width:600px;height:450px;"></div>
+      </div>
+      <div id="tabs-3">
+        <canvas id="canvasID1"></canvas>     
+        <canvas id="canvasID2"></canvas>     </div>
+      </div>
+    </div>
+
+   <script src="static/libs/plotly-latest.min.js"></script>
+   <script src="static/libs/gauge.min.js"></script>
+   <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.5/socket.io.min.js"></script>
+   <script type="text/javascript" charset="utf-8">
+     
+      $(document).ready(function() {    
+      var x1 = new Array();
+      var y1 = new Array();
+      var x2 = new Array();
+      var y2 = new Array();
+      
+      var gauge2 = new RadialGauge({
+          renderTo: 'canvasID2',
+          width: 300,
+          height: 300,
+          units: "[%]",
+          minValue: 0,
+          maxValue: 110,
+          majorTicks: [
+              "0",
+              "10",
+              "20",
+              "30",
+              "40",
+              "50",
+              "60",
+              "70",
+              "80",
+              "90",
+              "100",
+              "110"
+              
+          ],
+          minorTicks: 2,
+          strokeTicks: true,
+          
+          colorPlate: "#fff",
+          borderShadowWidth: 0,
+          borders: false,
+          needleType: "arrow",
+          needleWidth: 2,
+          needleCircleSize: 7,
+          needleCircleOuter: true,
+          needleCircleInner: false,
+          animationDuration: 1500,
+          animationRule: "linear"
+      });
+      gauge2.draw();
+      gauge2.value = 0;
+      
+      var gauge1 = new RadialGauge({
+          renderTo: 'canvasID1',
+          width: 300,
+          height: 300,
+          units: "[-]",
+          minValue: 0,
+          maxValue: 200,
+          majorTicks: [
+              "0",
+              "10",
+              "20",
+              "30",
+              "40",
+              "50",
+              "60",
+              "70",
+              "80",
+              "90",
+              "100",
+              "110",
+              "120",
+              "130",
+              "140",
+              "150",
+              "160",
+              "170",
+              "180",
+              "190",
+              "200"
+          ],
+          minorTicks: 2,
+          strokeTicks: true,
+          highlights: [
+              {
+                  "from": 150,
+                  "to": 200,
+                  "color": "rgba(200, 50, 50, .75)"
+              }
+          ],
+          colorPlate: "#fff",
+          borderShadowWidth: 0,
+          borders: false,
+          needleType: "arrow",
+          needleWidth: 2,
+          needleCircleSize: 7,
+          needleCircleOuter: true,
+          needleCircleInner: false,
+          animationDuration: 1500,
+          animationRule: "linear"
+      });
+      gauge1.draw();
+      gauge1.value = 0;
+      
+      
+      
+      namespace = '/test';
+      var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+
+      socket.on('connect', function() {
+        socket.emit('my_event', {data: 'I\'m connected!', value: 1}); });
+
+      socket.on('my_response', function(msg) {
+        console.log(msg.data);
+        
+          if (msg.data > 160) {
+            $('#log').append('#'+msg.count+': Vyska hladiny '+msg.data*0.25+'<br>').html(); 
+          }
+
+          if (msg.data < 160) {
+            $('#log').append('#'+msg.count+': Vlhkost '+msg.data+' %<br>').html(); 
+          }
+        var data = msg.data.split(',');
+
+          if (msg.data > 160) {
+            y1.push(parseFloat(data*0.25));
+          }
+
+          if (msg.data < 160){
+            y2.push(parseFloat(data));
+          }
+        
+        x1.push(parseFloat(msg.count));
+       
+        x2.push(parseFloat(msg.count));
+        
+  
+        var trace1 = {
+          x: x1,
+          y: y1,
+          name: 'Vyska hladiny'
+        };
+
+        var trace2 = {
+          x: x2,
+          y: y2,
+          name: 'Vlhkost [%]'
+        }; 
+        
+        
+        var layout = {
+            title: 'Data',
+            xaxis: {
+              title: 'time [s]',
+            },
+            yaxis: {
+              title: 'sensor values',
+              
+            },
+            legend: {
+              orientation: 'h',
+              y: 1.2
+            }
+          };
+               
+        
+        
+          if (msg.data > 150) {
+           gauge1.value = parseFloat(msg.data/4);
+           gauge1.draw();
+          }
+
+          else {
+            gauge2.value = parseFloat(msg.data);
+            gauge2.draw();
+          }
+        
+        var traces = [trace1, trace2];
+        Plotly.newPlot($('#plotdiv')[0], traces, layout); 
+          
+        });
+        
+
+      $('form#emit').submit(function(event) {
+          socket.emit('my_event', {value: $('#emit_value').val()});
+          return false; });
+      $('#buttonVal').click(function(event) {
+          //console.log($('#buttonVal').val());
+          socket.emit('click_event', {value: $('#buttonVal').val()});
+          return false; });
+      $('form#disconnect').submit(function(event) {
+          socket.emit('disconnect_request');
+          return false; });  
+      $('#closeApp').click(function(event) {
+        socket.disconnect();
+        window.close(); });
+      });
+      
+    </script>
+    
+    
+    <!-- http://jqueryui.com/tabs/#mouseover -->
+    <link rel="stylesheet" href="static/jquery-ui.min.css">
+    <script src="static/jquery-3.2.1.min.js"></script>
+    <script src="static/jquery-ui.min.js"></script>
+    <script>
+      $( function() {
+        $( "#tabs" ).tabs({
+          event: "mouseover"
+        });
+      } );
+    </script>
+
+ 
+  </body>
+</html>
+
+
+
+
